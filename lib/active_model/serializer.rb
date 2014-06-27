@@ -326,7 +326,7 @@ module ActiveModel
 
     def to_json(*args)
       if perform_caching?
-        cache.fetch expand_cache_key([self.class.to_s.underscore, cache_key, 'to-json']) do
+        cache_fetch expand_cache_key([self.class.to_s.underscore, cache_key, 'to-json']) do
           super
         end
       else
@@ -354,7 +354,7 @@ module ActiveModel
     # object without the root.
     def serializable_hash
       if perform_caching?
-        cache.fetch expand_cache_key([self.class.to_s.underscore, cache_key, 'serializable-hash']) do
+        cache_fetch expand_cache_key([self.class.to_s.underscore, cache_key, 'serializable-hash']) do
           _serializable_hash
         end
       else
@@ -487,6 +487,11 @@ module ActiveModel
 
     def expand_cache_key(*args)
       ActiveSupport::Cache.expand_cache_key(args)
+    end
+
+    def cache_fetch(key, &block)
+      options = respond_to?(:cache_options) ? cache_options : { }
+      cache.fetch(key, options, &block)
     end
 
     # Use ActiveSupport::Notifications to send events to external systems.
